@@ -8,5 +8,6 @@ dependencies = [
     "gymnasium[atari,other]>=1.2.2",
     "matplotlib>=3.10.7",
     "numpy>=2.3.4",
+    "tensorboard>=2.20.0",
     "torch>=2.9.0",
 ]
