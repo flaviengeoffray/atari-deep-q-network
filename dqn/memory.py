@@ -1,6 +1,7 @@
 import random
 from collections import namedtuple, deque
 
+random.seed(42)
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'reward', 'next_state'))
@@ -14,7 +15,8 @@ class ReplayMemory(object):
         self.memory.append(Transition(*args))
 
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+        sample = random.sample(self.memory, batch_size)
+        return Transition(*zip(*sample))
 
     def __len__(self):
         return len(self.memory)
