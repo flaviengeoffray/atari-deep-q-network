@@ -5,12 +5,11 @@ import numpy as np
 import ale_py
 
 def init_env(env_name: str) -> gym.Env:
-    env = gym.make(env_name, render_mode="rgb_array")
+    env = gym.make(env_name, render_mode="rgb_array", repeat_action_probability=0.0) 
     env = gym.wrappers.RecordEpisodeStatistics(env)
     env = gym.wrappers.ResizeObservation(env, (84, 84))
     env = gym.wrappers.GrayscaleObservation(env)
     env = gym.wrappers.FrameStackObservation(env, 4)
-    env.reset(seed=42)
     return env
 
 def display_env(env: gym.Env):

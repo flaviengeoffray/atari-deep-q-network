@@ -35,6 +35,7 @@ class DQNAgent:
 
         self.epsilon = max(
             self.epsilon_end,
+            # self.epsilon_start * (self.epsilon_decay ** self.timestep)
             self.epsilon_start - (self.epsilon_start - self.epsilon_end) * (self.timestep / self.epsilon_decay)
         )
         self.timestep += 1

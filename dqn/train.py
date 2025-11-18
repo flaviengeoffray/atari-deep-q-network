@@ -62,7 +62,7 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
     # progress_bar = tqdm.tqdm(total=nb_episodes, desc="Training Episodes")
     for episode in range(1, nb_episodes + 1):
         
-        state, _ = env.reset(seed=42)
+        state, _ = env.reset()
         state = preprocess_observation(state)
         
         total_reward = 0.0
