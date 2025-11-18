@@ -1,16 +1,19 @@
 from dataclasses import dataclass
-import datetime 
-import torch
-import torch.nn as nn
-from torch.utils.tensorboard import SummaryWriter
+import datetime
 import gymnasium as gym
 import numpy as np
 import tqdm
 import matplotlib.pyplot as plt
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
+
 from dqn.dqn import DQN
 from dqn.agent import DQNAgent 
 from dqn.memory import ReplayMemory, Transition
+from dqn.env import preprocess_observation
 
 @dataclass
 class TrainingConfig:
@@ -48,44 +51,41 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
     q_network = DQN(env.action_space.n).to(device)
     target_network = DQN(env.action_space.n).to(device)
     target_network.load_state_dict(q_network.state_dict())
-    target_network.eval()
-    
+
     agent = DQNAgent(q_network, env.action_space.n, epsilon_start=config.agent_epsilon_start, epsilon_decay=config.agent_epsilon_decay, epsilon_end=config.agent_epsilon_end, device=device)
     memory = ReplayMemory(memory_capacity)
     optimizer = torch.optim.Adam(q_network.parameters(), lr=lr)
-    # Use Huber loss (Smooth L1) which is more stable for Q-learning
-    criterion = nn.SmoothL1Loss()
+    criterion = nn.MSELoss()
     writer = SummaryWriter(f"runs/dqn_experiment_{int(datetime.datetime.now().timestamp())}")
 
-
+    step_count = 0
     # progress_bar = tqdm.tqdm(total=nb_episodes, desc="Training Episodes")
     for episode in range(1, nb_episodes + 1):
         
-        state, _ = env.reset()
+        state, _ = env.reset(seed=42)
+        state = preprocess_observation(state)
+        
         total_reward = 0.0
         total_loss = 0.0
         loss_count = 0
 
         for t in range(nb_steps_per_episode):
-
+            step_count += 1
             # Select and perform an action
             action = agent.get_action(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
+            total_reward += reward
 
             # Store the transition in memory
-            next_state = None if done else next_state
+            next_state = None if done else preprocess_observation(next_state)
             memory.push(state, action, reward, next_state)
 
             state = next_state
-            total_reward += reward
-
-            if terminated:
-                break
 
             # Training step
-            if t > 1 and t % train_frequency == 0 and len(memory) >= batch_size:
-                # print(f"Training at episode {episode}, step {t}")
+            if len(memory) >= batch_size and t % train_frequency == 0:
+
                 batch = memory.sample(batch_size)
 
                 non_final_mask = torch.tensor(
@@ -94,37 +94,36 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
                     dtype=torch.bool,
                 )
 
-                # Build batches and normalize pixel values to [0,1]
-                state_batch = torch.FloatTensor(np.array(batch.state)).to(device)
-
-                next_states_list = [s for s in batch.next_state if s is not None]
-                if len(next_states_list) > 0:
-                    non_final_next_states = torch.FloatTensor(np.array(next_states_list)).to(device)
+                # Prepare batches
+                state_batch = torch.from_numpy(np.stack(batch.state)).float().to(device)
+                # Build a tensor only for non-final next states (preserve ordering)
+                if non_final_mask.any():
+                    non_final_next_states = torch.from_numpy(
+                        np.stack([s for s in batch.next_state if s is not None])
+                    ).float().to(device)
                 else:
-                    non_final_next_states = torch.empty((0,), device=device)
+                    non_final_next_states = None
 
                 action_batch = torch.tensor(batch.action, device=device).unsqueeze(1)
                 reward_batch = torch.tensor(batch.reward, device=device, dtype=torch.float32)
 
                 # Compute Q(s_t, a)
                 q_values = q_network(state_batch)
-                state_action_values = q_values.gather(1, action_batch)
+                q_value = q_values.gather(1, action_batch)
 
-                # Compute Target and Loss
-                q_next = torch.zeros(batch_size, device=device)
+                # Compute Target Q values
+                next_q_values = torch.zeros(batch_size, device=device)
                 with torch.no_grad():
-                    # Only call target_network if we have non-final next states
-                    if non_final_next_states.numel() != 0:
-                        q_next[non_final_mask] = target_network(non_final_next_states).max(1)[0]
-                expected_state_action_values = reward_batch + (gamma * q_next)
+                    if non_final_mask.any():
+                        next_q_values[non_final_mask] = target_network(non_final_next_states).max(1)[0]
+                q_next = reward_batch + gamma * next_q_values
 
-                loss = criterion(state_action_values.squeeze(), expected_state_action_values)
-
+                loss = criterion(q_value.squeeze(), q_next)
+            
                 if t % 100 == 0:
                     writer.add_scalar("Q-Values/Mean", q_values.mean().item(), episode * config.nb_steps_per_episode + t)
                     writer.add_scalar("Q-Values/Std", q_values.std().item(), episode * config.nb_steps_per_episode + t)
-                    writer.add_scalar("Rewards/Positive", (reward_batch == 1).sum().item(), episode * config.nb_steps_per_episode + t)
-                    print(f"Épisode {episode}, Step {t}: Q={q_values.mean().item():.1f}±{q_values.std().item():.1f}, "f"Loss={loss.item():.3f}, +1s={(reward_batch==1).sum().item()}")
+                    # print(f"Épisode {episode}, Step {t}: Q={q_values.mean().item():.1f}±{q_values.std().item():.1f}, "f"Loss={loss.item():.3f}, +1s={(reward_batch==1).sum().item()}")
              
                 # Update Q-Network
                 optimizer.zero_grad()
@@ -134,8 +133,9 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
                 total_loss += loss.item()
                 loss_count += 1
             
-            # Update target network (skip t==0 to avoid redundant immediate copy)
-            if t > 0 and t % target_update_frequency == 0:
+            # Update target network
+            if step_count % target_update_frequency == 0:
+                print(f"Updating target network at step {step_count}")
                 target_network.load_state_dict(q_network.state_dict())
 
             if done:
