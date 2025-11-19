@@ -24,8 +24,7 @@ class DQNAgent:
         self.timestep = 0        
 
     def get_best_action(self, obs: np.ndarray):
-        # obs is shape (84, 84, 4) and is already normalized
-        state_tensor = torch.FloatTensor(np.array([obs])).to(self.device)
+        state_tensor = torch.FloatTensor(obs).unsqueeze(0).to(self.device)  # Add batch dimension
         with torch.no_grad():
             q_values = self.model(state_tensor)
         best_action = torch.argmax(q_values).item()
@@ -35,7 +34,6 @@ class DQNAgent:
 
         self.epsilon = max(
             self.epsilon_end,
-            # self.epsilon_start * (self.epsilon_decay ** self.timestep)
             self.epsilon_start - (self.epsilon_start - self.epsilon_end) * (self.timestep / self.epsilon_decay)
         )
         self.timestep += 1
