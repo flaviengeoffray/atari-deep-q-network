@@ -12,8 +12,26 @@ def load_checkpoint(model: DQN, path: str):
     model.load_state_dict(torch.load(path))
     model.eval()
 
+# Good hyperparameters for Pong
+# training_config = TrainingConfig(
+#     nb_episodes=1000,
+#     nb_steps_per_episode=10000,
+#     memory_capacity=5000,
+#     batch_size=32,
+#     train_frequency=4,
+#     lr=0.00025,
+#     gamma=0.99,
+#     agent_epsilon_start=1.0,
+#     agent_epsilon_decay=1000000,
+#     agent_epsilon_end=0.1,
+#     target_update_frequency=1000,
+#     checkpoint_frequency=100,
+#     learning_starts=10000
+# )
+
+# Need to train longer for better results
 training_config = TrainingConfig(
-    nb_episodes=1000,
+    nb_episodes=2000,
     nb_steps_per_episode=10000,
     memory_capacity=5000,
     batch_size=32,
