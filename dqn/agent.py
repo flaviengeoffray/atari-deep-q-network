@@ -1,4 +1,3 @@
-
 import random
 import numpy as np
 import torch
@@ -7,8 +6,16 @@ from dqn.dqn import DQN
 
 random.seed(42)
 
+
 class DQNAgent:
-    def __init__(self, model: DQN, n_actions: int, epsilon_start: float, epsilon_decay: float, epsilon_end: float, device: torch.device):
+    def __init__(
+        self,
+        model: DQN,
+        n_actions: int,
+        epsilon_start: float,
+        epsilon_decay: float,
+        epsilon_end: float,
+    ):
         self.model = model
         self.n_actions = n_actions
         self.epsilon = epsilon_start
@@ -17,24 +24,29 @@ class DQNAgent:
         self.epsilon_end = epsilon_end
         self.actions = list(range(n_actions))
         self.timestep = 0
-        self.device = device
+        self.device = torch.device(
+            "mps" if torch.backends.mps.is_available() else "cpu"
+        )
 
     def reset(self):
         self.epsilon = self.epsilon_start
-        self.timestep = 0        
+        self.timestep = 0
 
     def get_best_action(self, obs: np.ndarray):
-        state_tensor = torch.FloatTensor(obs).unsqueeze(0).to(self.device)  # Add batch dimension
+        state_tensor = (
+            torch.FloatTensor(obs).unsqueeze(0).to(self.device)
+        )  # Add batch dimension
         with torch.no_grad():
             q_values = self.model(state_tensor)
         best_action = torch.argmax(q_values).item()
         return best_action
 
     def get_action(self, state: np.ndarray):
-
         self.epsilon = max(
             self.epsilon_end,
-            self.epsilon_start - (self.epsilon_start - self.epsilon_end) * (self.timestep / self.epsilon_decay)
+            self.epsilon_start
+            - (self.epsilon_start - self.epsilon_end)
+            * (self.timestep / self.epsilon_decay),
         )
         self.timestep += 1
 
@@ -42,4 +54,3 @@ class DQNAgent:
             return random.choice(self.actions)
         else:
             return self.get_best_action(state)
-            
