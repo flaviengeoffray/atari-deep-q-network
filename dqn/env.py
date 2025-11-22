@@ -15,11 +15,11 @@ def init_env(env_name: str, render_mode="rgb_array") -> gym.Env:
     # Standard Atari Preprocessing (grayscale, resize 84x84, frame skip, normalisation)
     env = gym.wrappers.AtariPreprocessing(
         env,
-        noop_max=30,           
-        frame_skip=4,          
-        screen_size=84,        
-        grayscale_obs=True,    
-        scale_obs=True         # Normalize [0, 255] -> [0, 1]
+        noop_max=30,        
+        frame_skip=4,       
+        screen_size=84,     
+        grayscale_obs=True, 
+        scale_obs=True      # Normalize [0, 255] -> [0, 1]
     )
     
     env = gym.wrappers.FrameStackObservation(env, 4)

@@ -4,8 +4,6 @@ import torch
 
 from dqn.dqn import DQN
 
-random.seed(42)
-
 
 class DQNAgent:
     def __init__(
