@@ -15,6 +15,7 @@ class DQNAgent:
         epsilon_start: float,
         epsilon_decay: float,
         epsilon_end: float,
+        device: torch.device = torch.device("mps" if torch.backends.mps.is_available() else "cpu"),
     ):
         self.model = model
         self.n_actions = n_actions
@@ -24,9 +25,7 @@ class DQNAgent:
         self.epsilon_end = epsilon_end
         self.actions = list(range(n_actions))
         self.timestep = 0
-        self.device = torch.device(
-            "mps" if torch.backends.mps.is_available() else "cpu"
-        )
+        self.device = device
 
     def reset(self):
         self.epsilon = self.epsilon_start

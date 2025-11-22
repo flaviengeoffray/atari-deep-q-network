@@ -5,6 +5,9 @@ import ale_py
 
 
 def init_env(env_name: str, render_mode="rgb_array") -> gym.Env:
+
+    print(f"Initializing environment: {env_name} with render_mode={render_mode}")
+    
     env = gym.make(env_name, render_mode=render_mode, frameskip=1, repeat_action_probability=0.0)
     
     env = gym.wrappers.RecordEpisodeStatistics(env)

@@ -15,7 +15,6 @@ from dqn.env import preprocess_observation
 
 @dataclass
 class TrainingConfig:
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     nb_episodes: int = 1000
     nb_steps_per_episode: int = 10000
     memory_capacity: int = 100000
@@ -31,11 +30,12 @@ class TrainingConfig:
     learning_starts: int = 10000
 
 
-def train(env: gym.Env, config: TrainingConfig = TrainingConfig()):
-    # Unpack config
-    device = config.device
+def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
+    
+    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Training on device: {device}")
 
+    # Unpack config
     nb_episodes = config.nb_episodes
     nb_steps_per_episode = config.nb_steps_per_episode
     memory_capacity = config.memory_capacity
@@ -207,6 +207,7 @@ def evaluate(
             action = agent.get_best_action(state)
             next_state, reward, terminated, truncated, _ = eval_env.step(action)
             state = preprocess_observation(next_state)
+
             total_reward += reward
 
             if terminated or truncated:
