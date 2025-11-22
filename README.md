@@ -6,8 +6,8 @@ This project implements a Deep Q-Network (DQN) agent capable of learning to play
 
 Watch the DQN agent play Pong!
 
-<video width="640" height="360" controls>
-  <source src="videos/dqn_eval_1763758378/eval-episode-0.mp4" type="video/mp4">
+<video width="640" height="360" controls autoplay loop muted playsinline>
+  <source src="videos/eval.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
