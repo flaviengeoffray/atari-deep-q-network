@@ -1,0 +1,16 @@
+training_config:
+  nb_episodes: 10000
+  nb_steps_per_episode: 8000000
+  memory_capacity: 1000000
+  batch_size: 32
+  train_frequency: 4
+  lr: 0.0001
+  gamma: 0.99
+  agent_epsilon_start: 1.0
+  agent_epsilon_decay: 1000000
+  agent_epsilon_end: 0.1
+  target_update_frequency: 10000
+  checkpoint_frequency: 1000
+  learning_starts: 50000
+  dqn_class: "DQNv2"
+  optimizer: "Adam"

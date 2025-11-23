@@ -24,3 +24,23 @@ class DQN(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.output(x)
         return x
+
+class DQNv2(nn.Module):
+    def __init__(self, n_actions: int):
+        super(DQNv2, self).__init__()
+        # "The input is an 84x84x4 image"
+        self.conv1 = nn.Conv2d(in_channels=4, out_channels=32, kernel_size=8, stride=4)
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2)
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1)
+        self.fc1 = nn.Linear(in_features=64 * 7 * 7, out_features=512)
+        self.output = nn.Linear(in_features=512, out_features=n_actions)
+
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = x.view(-1, 64 * 7 * 7)
+        x = F.relu(self.fc1(x))
+        x = self.output(x)
+        return x

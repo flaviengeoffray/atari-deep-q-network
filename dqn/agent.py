@@ -2,13 +2,13 @@ import random
 import numpy as np
 import torch
 
-from dqn.dqn import DQN
+from dqn.dqn import DQN, DQNv2
 
 
 class DQNAgent:
     def __init__(
         self,
-        model: DQN,
+        model: DQN | DQNv2,
         n_actions: int,
         epsilon_start: float,
         epsilon_decay: float,

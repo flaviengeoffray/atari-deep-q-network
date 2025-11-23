@@ -4,17 +4,18 @@ import click
 
 from dqn.env import init_env
 from dqn.agent import DQNAgent
-from dqn.dqn import DQN
+from dqn.dqn import DQN, DQNv2
 from dqn.train import TrainingConfig, training, evaluate
 
 
-def read_config(config_path: str) -> TrainingConfig:
+def read_config(config_path: str, print_config: bool = True) -> TrainingConfig:
     with open(config_path, "r") as file:
         config_dict = yaml.safe_load(file)["training_config"]
 
-    print("Training Configuration:")
-    for k, v in config_dict.items():
-        print(f"{k}: {v}")
+    if print_config:
+        print("Training Configuration:")
+        for k, v in config_dict.items():
+            print(f"{k}: {v}")
     return TrainingConfig(**config_dict)
 
 
@@ -29,20 +30,24 @@ def load_checkpoint(model: DQN, path: str):
 @click.option('--eval/--no-eval', default=False, help='Run evaluation.')
 @click.option('--render-human/--no-render-human', default=False, help='Render evaluation in human mode.')
 @click.option('--create-video/--no-create-video', default=False, help='Create a video of the evaluation.')
-@click.option('--config', 'config_path', default='training_config.yml', type=click.Path(), help='Path to training config YAML.')
-@click.option('--checkpoint', 'checkpoint_path', default='best_run/dqn_pong_5000.pth', type=click.Path(), help='Path to model checkpoint for evaluation.')
-@click.option('--env', 'env_id', default='ALE/Pong-v5', help='Gym environment id to use.')
+@click.option('--config', 'config_path', default='training_config_breakout.yml', type=click.Path(), help='Path to training config YAML.')
+@click.option('--checkpoint', 'checkpoint_path', default='best_run_breakout/dqn_breakout_10000.pth', type=click.Path(), help='Path to model checkpoint for evaluation.')
+@click.option('--env', 'env_id', default='ALE/Breakout-v5', help='Gym environment id to use.')
 @click.option('--episodes', default=10, type=int, help='Number of episodes for evaluation.')
 def cli(train, eval, render_human, create_video, config_path, checkpoint_path, env_id, episodes):
     """
     CLI to train and/or evaluate the DQN agent.
     """
+
     if train:
-        cfg = read_config(config_path)
+        cfg = read_config(config_path, print_config=True)
         training_env = init_env(env_id, render_mode="rgb_array")
         training(training_env, cfg)
 
     if eval:
+        cfg = read_config(config_path, print_config=False)
+        DQNClass = DQN if cfg.dqn_class == "DQN" else DQNv2
+
         render_type = "human" if render_human else "rgb_array"
         if render_human:
             print("Rendering evaluation in human mode.")
@@ -51,7 +56,7 @@ def cli(train, eval, render_human, create_video, config_path, checkpoint_path, e
 
         env = init_env(env_id, render_mode=render_type)
         agent = DQNAgent(
-            DQN(env.action_space.n),
+            DQNClass(env.action_space.n),
             env.action_space.n,
             epsilon_start=0.0,
             epsilon_decay=1,

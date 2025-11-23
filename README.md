@@ -74,13 +74,13 @@ python main.py --eval --checkpoint best_run/dqn_pong_5000.pth --episodes 10
 The following charts visualize the training progress from the best run. The training stopped at 5000 episodes achieving an average reward of 19.5. The agent was able to learn to play Pong and achieve a high score. The training configuration is stored in `training_config.yml`.
 
 ### Reward during Training
-![Reward Training](best_run/Reward_Training.svg)
+![Reward Training](best_run_pong/Reward_Training.svg)
 
 ### Loss during Training
-![Loss Training](best_run/Loss_Training.svg)
+![Loss Training](best_run_pong/Loss_Training.svg)
 
 ### Mean Q-Values
-![Q-Values Mean](best_run/Q-Values_Mean.svg)
+![Q-Values Mean](best_run_pong/Q-Values_Mean.svg)
 
 ### Exploration Rate (Epsilon)
-![Exploration Rate](best_run/Exploration_ε.svg)
+![Exploration Rate](best_run_pong/Exploration_ε.svg)

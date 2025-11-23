@@ -7,7 +7,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
-from dqn.dqn import DQN
+from dqn.dqn import DQN, DQNv2
 from dqn.agent import DQNAgent
 from dqn.memory import ReplayMemory
 from dqn.env import preprocess_observation
@@ -28,11 +28,15 @@ class TrainingConfig:
     target_update_frequency: int = 1000
     checkpoint_frequency: int = 100
     learning_starts: int = 10000
+    dqn_class: str = "DQN"  # or "DQNv2"
+    optimizer: str = "RMSprop"  # or "Adam"
 
 
 def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
     
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    env_name = "pong" if "Pong" in env.spec.id else "breakout"
+    print(f"Training DQN agent on {env_name}")
     print(f"Training on device: {device}")
 
     # Unpack config
@@ -48,8 +52,12 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
     learning_starts = config.learning_starts
 
     # Initialization
-    q_network = DQN(env.action_space.n).to(device)
-    target_network = DQN(env.action_space.n).to(device)
+    if config.dqn_class == "DQNv2":
+        q_network = DQNv2(env.action_space.n).to(device)
+        target_network = DQNv2(env.action_space.n).to(device)
+    else:
+        q_network = DQN(env.action_space.n).to(device)
+        target_network = DQN(env.action_space.n).to(device)
     target_network.load_state_dict(q_network.state_dict())
 
     agent = DQNAgent(
@@ -61,10 +69,13 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
         device=device,
     )
     memory = ReplayMemory(memory_capacity)
-    optimizer = torch.optim.RMSprop(q_network.parameters(), lr=lr)
+    if config.optimizer == "Adam":
+        optimizer = torch.optim.Adam(q_network.parameters(), lr=lr)
+    else:
+        optimizer = torch.optim.RMSprop(q_network.parameters(), lr=lr)
     criterion = F.smooth_l1_loss
     writer = SummaryWriter(
-        f"runs/dqn_experiment_{int(datetime.datetime.now().timestamp())}"
+        f"runs/dqn_experiment_{env_name}_{int(datetime.datetime.now().timestamp())}"
     )
 
     step_count = 0
@@ -171,7 +182,7 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
                     "epsilon": agent.epsilon,
                     "step_count": step_count,
                 },
-                f"checkpoints/dqn_pong_{episode}.pth",
+                f"checkpoints/dqn_{env_name}_{episode}.pth",
             )
 
     env.close()
@@ -185,8 +196,9 @@ def evaluate(
     agent.model.eval()
 
     eval_env = env
+    env_name = "pong" if "Pong" in env.spec.id else "breakout"
     if create_video:
-        video_folder = f"videos/dqn_eval_{int(datetime.datetime.now().timestamp())}"
+        video_folder = f"videos/dqn_eval_{env_name}_{int(datetime.datetime.now().timestamp())}"
         # Record every episode
         eval_env = gym.wrappers.RecordVideo(
             env,
@@ -205,6 +217,13 @@ def evaluate(
 
         while True:
             action = agent.get_best_action(state)
+
+            if action == 0 and env_name == "breakout":
+                # In Breakout, we need to fire to start the game
+                action = 1  # FIRE action
+                next_state, _, _, _, _ = eval_env.step(action)
+                state = preprocess_observation(next_state)
+
             next_state, reward, terminated, truncated, _ = eval_env.step(action)
             state = preprocess_observation(next_state)
 
