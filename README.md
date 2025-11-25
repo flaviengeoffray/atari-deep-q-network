@@ -1,8 +1,8 @@
 # Atari Deep Q-Network
 
-This project implements a Deep Q-Network (DQN) agent capable of learning to play Atari games, specifically Pong, using the Gymnasium environment and PyTorch. This is my personal implementation of the DQN algorithm introduced in the paper [Playing Atari with Deep Reinforcement Learning](https://arxiv.org/abs/1312.5602) by Volodymyr Mnih et al.
+This project implements a Deep Q-Network (DQN) agent capable of learning to play Atari games, specifically Pong and Breakout, using the Gymnasium environment and PyTorch. This is my personal implementation of the DQN algorithm introduced in the paper [Playing Atari with Deep Reinforcement Learning](https://arxiv.org/abs/1312.5602) by Volodymyr Mnih et al. For Breakout, the model has been improved with a 3-layer convolutional architecture.
 
-## Demo Video
+## Demo Video 
 
 Watch the DQN agent play Pong! 
 See the video in the `videos` folder.
@@ -16,9 +16,11 @@ See the video in the `videos` folder.
 ## Project Structure
 
 - `dqn/`: Contains the implementation of the DQN agent, replay buffer, and environment wrappers.
-- `best_run/`: Stores the best model checkpoint and training metrics.
+- `best_run_pong/`: Stores the best model checkpoint and training metrics for Pong.
+- `best_run_breakout/`: Stores the best model checkpoint and training metrics for Breakout.
 - `main.py`: The entry point for training and evaluating the agent.
-- `training_config.yml`: Configuration file for training hyperparameters.
+- `training_config_pong.yml`: Configuration file for Pong training hyperparameters.
+- `training_config_breakout.yml`: Configuration file for Breakout training hyperparameters.
 
 ## Installation
 
@@ -44,10 +46,10 @@ The `main.py` script provides a Command Line Interface (CLI) for training and ev
 
 ### Training
 
-To train the agent using the configuration in `training_config.yml`:
+To train the agent using the configuration in `training_config_pong.yml`:
 
 ```bash
-python main.py --train --config training_config.yml
+python main.py --train --config training_config_pong.yml
 ```
 
 ### Evaluation
@@ -55,7 +57,7 @@ python main.py --train --config training_config.yml
 To evaluate the pre-trained model (best run):
 
 ```bash
-python main.py --eval --checkpoint best_run/dqn_pong_5000.pth --episodes 10
+python main.py --eval --checkpoint best_run_pong/dqn_pong_5000.pth --episodes 10
 ```
 
 **Options:**
@@ -71,16 +73,29 @@ python main.py --eval --checkpoint best_run/dqn_pong_5000.pth --episodes 10
 
 ## Results
 
-The following charts visualize the training progress from the best run. The training stopped at 5000 episodes achieving an average reward of 19.5. The agent was able to learn to play Pong and achieve a high score. The training configuration is stored in `training_config.yml`.
+### Pong
 
-### Reward during Training
+The following charts visualize the training progress from the best run. The training stopped at 5000 episodes achieving an average reward of 19.5. The agent was able to learn to play Pong and achieve a high score. The training configuration is stored in `training_config_pong.yml`.
+
+#### Reward during Training
 ![Reward Training](best_run_pong/Reward_Training.svg)
 
-### Loss during Training
-![Loss Training](best_run_pong/Loss_Training.svg)
 
-### Mean Q-Values
+#### Mean Q-Values
 ![Q-Values Mean](best_run_pong/Q-Values_Mean.svg)
 
-### Exploration Rate (Epsilon)
+#### Exploration Rate (Epsilon)
 ![Exploration Rate](best_run_pong/Exploration_ε.svg)
+
+### Breakout
+
+The following charts visualize the training progress from the best run on Breakout. The model uses an improved 3-layer convolutional architecture. The training configuration is stored in `training_config_breakout.yml`.
+
+#### Reward during Training
+![Reward Training](best_run_breakout/Reward_Training.svg)
+
+#### Mean Q-Values
+![Q-Values Mean](best_run_breakout/Q-Values_Mean.svg)
+
+#### Exploration Rate (Epsilon)
+![Exploration Rate](best_run_breakout/Exploration_ε.svg)

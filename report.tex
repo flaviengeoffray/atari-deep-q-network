@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{geometry}
+
+\geometry{a4paper, margin=1in}
+
+\title{Study of Deep Q-Network on Atari Games: Pong and Breakout}
+\author{Flavien Geoffray}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    This report presents a study of the Deep Q-Network (DQN) algorithm applied to the Atari 2600 games Pong and Breakout. We implement and evaluate a DQN agent using the Gymnasium environment. For Pong, a standard architecture was used, while for Breakout, an improved 3-layer convolutional neural network (DQNv2) was implemented to handle the increased complexity. We analyze the training process and performance of the agents through reward and Q-value metrics.
+\end{abstract}
+
+\section{Introduction}
+Reinforcement Learning (RL) has shown great success in learning control policies directly from high-dimensional sensory inputs. The Deep Q-Network (DQN) algorithm, introduced by Mnih et al., combines Q-learning with deep neural networks to stabilize the learning of value functions. In this study, we apply DQN to two classic Atari games: Pong and Breakout.
+
+\section{Methodology}
+
+\subsection{DQN Algorithm}
+The agent interacts with the environment by observing a state $s_t$, taking an action $a_t$, receiving a reward $r_t$, and transitioning to a new state $s_{t+1}$. The goal is to maximize the expected cumulative reward. The Q-function $Q(s, a)$ estimates the expected future reward for taking action $a$ in state $s$. We use a neural network parameterized by $\theta$ to approximate the Q-function.
+
+\subsection{Network Architectures}
+We explored two network architectures:
+\begin{itemize}
+    \item \textbf{Base Architecture (Pong):} A standard convolutional network suitable for simpler dynamics like Pong.
+    \item \textbf{Improved Architecture (Breakout - DQNv2):} A deeper network with 3 convolutional layers to capture more complex spatial features required for Breakout.
+\end{itemize}
+
+\subsection{Hyperparameters}
+The training configurations for the two games are detailed in Table \ref{tab:hyperparams}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Parameter} & \textbf{Pong} & \textbf{Breakout} \\
+        \midrule
+        Episodes & 5000 & 10000 \\
+        Steps per Episode & 10000 & 8000000 \\
+        Memory Capacity & 100000 & 1000000 \\
+        Batch Size & 32 & 32 \\
+        Learning Rate & 0.00025 & 0.0001 \\
+        Gamma ($\gamma$) & 0.99 & 0.99 \\
+        Epsilon Start & 1.0 & 1.0 \\
+        Epsilon End & 0.1 & 0.1 \\
+        Target Update Freq & 10000 & 10000 \\
+        Learning Starts & 10000 & 50000 \\
+        Optimizer & Adam & Adam \\
+        \bottomrule
+    \end{tabular}
+    \caption{Hyperparameters for Pong and Breakout}
+    \label{tab:hyperparams}
+\end{table}
+
+\section{Results}
+
+\subsection{Pong}
+The agent was trained for 5000 episodes. Figure \ref{fig:pong_reward} shows the evolution of the average reward during training, and Figure \ref{fig:pong_qvalues} displays the mean Q-values.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.8\linewidth]{best_run_pong/Reward_Training.svg}
+    \caption{Average Reward during Training (Pong)}
+    \label{fig:pong_reward}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.8\linewidth]{best_run_pong/Q-Values_Mean.svg}
+    \caption{Mean Q-Values during Training (Pong)}
+    \label{fig:pong_qvalues}
+\end{figure}
+
+The results indicate that the agent successfully learned to play Pong, achieving a high average reward of 19.5.
+
+\subsection{Breakout}
+For Breakout, the improved 3-layer CNN model was trained for 10000 episodes. The training progress is illustrated in Figure \ref{fig:breakout_reward} and Figure \ref{fig:breakout_qvalues}.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.8\linewidth]{best_run_breakout/Reward_Training.svg}
+    \caption{Average Reward during Training (Breakout)}
+    \label{fig:breakout_reward}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.8\linewidth]{best_run_breakout/Q-Values_Mean.svg}
+    \caption{Mean Q-Values during Training (Breakout)}
+    \label{fig:breakout_qvalues}
+\end{figure}
+
+The improved architecture allowed the agent to learn effective strategies for Breakout, as evidenced by the increasing reward and Q-values.
+
+\section{Conclusion}
+This study demonstrated the effectiveness of DQN on Atari games. While a simpler architecture sufficed for Pong, Breakout benefited from a deeper convolutional network (3 layers) and a larger replay buffer. The results confirm that tailoring the network architecture and hyperparameters is crucial for optimal performance in different environments.
+
+\end{document}
