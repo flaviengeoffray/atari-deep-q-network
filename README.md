@@ -57,7 +57,10 @@ python main.py --train --config training_config_pong.yml
 To evaluate the pre-trained model (best run):
 
 ```bash
-python main.py --eval --checkpoint best_run_pong/dqn_pong_5000.pth --episodes 10
+python main.py --eval --env Pong --checkpoint best_run_pong/dqn_pong_5000.pth --episodes 10 --create-video
+```
+```bash
+python main.py --eval --env Breakout --checkpoint best_run_breakout/dqn_breakout_10000.pth --episodes 10 --render-human
 ```
 
 **Options:**
@@ -78,24 +81,24 @@ python main.py --eval --checkpoint best_run_pong/dqn_pong_5000.pth --episodes 10
 The following charts visualize the training progress from the best run. The training stopped at 5000 episodes achieving an average reward of 19.5. The agent was able to learn to play Pong and achieve a high score. The training configuration is stored in `training_config_pong.yml`.
 
 #### Reward during Training
-![Reward Training](best_run_pong/Reward_Training.svg)
+![Reward Training](best_run_pong/training/Reward_Training.svg)
 
 
 #### Mean Q-Values
-![Q-Values Mean](best_run_pong/Q-Values_Mean.svg)
+![Q-Values Mean](best_run_pong/training/Q-Values_Mean.svg)
 
 #### Exploration Rate (Epsilon)
-![Exploration Rate](best_run_pong/Exploration_ε.svg)
+![Exploration Rate](best_run_pong/training/Exploration_ε.svg)
 
 ### Breakout
 
 The following charts visualize the training progress from the best run on Breakout. The model uses an improved 3-layer convolutional architecture. The training configuration is stored in `training_config_breakout.yml`.
 
 #### Reward during Training
-![Reward Training](best_run_breakout/Reward_Training.svg)
+![Reward Training](best_run_breakout/training/Reward_Training.svg)
 
 #### Mean Q-Values
-![Q-Values Mean](best_run_breakout/Q-Values_Mean.svg)
+![Q-Values Mean](best_run_breakout/training/Q-Values_Mean.svg)
 
 #### Exploration Rate (Epsilon)
-![Exploration Rate](best_run_breakout/Exploration_ε.svg)
+![Exploration Rate](best_run_breakout/training/Exploration_ε.svg)
