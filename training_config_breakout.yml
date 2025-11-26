@@ -12,5 +12,5 @@ training_config:
   target_update_frequency: 10000
   checkpoint_frequency: 1000
   learning_starts: 50000
-  dqn_class: "DQN"
+  dqn_class: "DQNv2"
   optimizer: "Adam"

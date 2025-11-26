@@ -32,12 +32,19 @@ def load_checkpoint(model: DQN, path: str):
 @click.option('--create-video/--no-create-video', default=False, help='Create a video of the evaluation.')
 @click.option('--config', 'config_path', default='training_config_breakout.yml', type=click.Path(), help='Path to training config YAML.')
 @click.option('--checkpoint', 'checkpoint_path', default='best_run_breakout/dqn_breakout_10000.pth', type=click.Path(), help='Path to model checkpoint for evaluation.')
-@click.option('--env', 'env_id', default='ALE/Breakout-v5', help='Gym environment id to use.')
+@click.option('--env', 'env_id', default='Pong', help='Gym environment id to use. [Pong, Breakout]')
 @click.option('--episodes', default=10, type=int, help='Number of episodes for evaluation.')
 def cli(train, eval, render_human, create_video, config_path, checkpoint_path, env_id, episodes):
     """
     CLI to train and/or evaluate the DQN agent.
     """
+
+    if env_id == "Pong":
+        env_id = "ALE/Pong-v5"
+    elif env_id == "Breakout":
+        env_id = "ALE/Breakout-v5"
+    else:
+        raise ValueError(f"Unknown environment: {env_id}")
 
     if train:
         cfg = read_config(config_path, print_config=True)
