@@ -53,11 +53,14 @@ def training(env: gym.Env, config: TrainingConfig = TrainingConfig()):
 
     # Initialization
     if config.dqn_class == "DQNv2":
+        print("Using DQNv2 architecture")
         q_network = DQNv2(env.action_space.n).to(device)
         target_network = DQNv2(env.action_space.n).to(device)
     else:
+        print("Using DQN architecture")
         q_network = DQN(env.action_space.n).to(device)
         target_network = DQN(env.action_space.n).to(device)
+        
     target_network.load_state_dict(q_network.state_dict())
 
     agent = DQNAgent(
